@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Chatbot</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f0f0f0;
+    }
+    .chat-container {
+      width: 400px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .chat-box {
+      flex: 1;
+      padding: 15px;
+      overflow-y: auto;
+      border-bottom: 1px solid #ccc;
+    }
+    .message {
+      margin: 5px 0;
+      padding: 8px 12px;
+      border-radius: 10px;
+      max-width: 80%;
+    }
+    .user {
+      background: #0078ff;
+      color: white;
+      align-self: flex-end;
+    }
+    .bot {
+      background: #eee;
+      align-self: flex-start;
+    }
+    .input-area {
+      display: flex;
+      padding: 10px;
+      background: #fafafa;
+    }
+    input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+    button {
+      margin-left: 5px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      background: #0078ff;
+      color: white;
+      cursor: pointer;
+    }
+    .quick-replies {
+      margin-top: 5px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+    .quick-replies button {
+      background: #eee;
+      color: #333;
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 0.9em;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-box" id="chat-box"></div>
+    <div class="input-area">
+      <input type="text" id="user-input" placeholder="Type a message...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // Keywords with multiple replies and quick replies
+    const responses = {
+      "hello": {
+        replies: ["Hi there! 👋", "Hello! How can I help you?", "Hey! Nice to see you!"],
+        quick: ["How are you?", "Your name?", "Bye"]
+      },
+      "hi": {
+        replies: ["Hi! How are you?", "Hello! 👋", "Hey there!"],
+        quick: ["How are you?", "Your name?", "Bye"]
+      },
+      "how are you": {
+        replies: ["I'm good, thank you! 😄", "Doing great! How about you?", "I'm fine, thanks for asking!"],
+        quick: ["Hello", "Your name?", "Bye"]
+      },
+      "your name": {
+        replies: ["I am ChatBot 🤖", "You can call me Bot", "I'm your friendly chatbot!"],
+        quick: ["Hello", "How are you?", "Bye"]
+      },
+      "bye": {
+        replies: ["Goodbye! Have a nice day! 👋", "See you later!", "Bye! Take care!"],
+        quick: ["Hello", "How are you?"]
+      }
+    };
+
+    function sendMessage(text = null) {
+      const input = document.getElementById("user-input");
+      const message = text || input.value.trim();
+      if (!message) return;
+
+      displayMessage(message, "user");
+      input.value = "";
+
+      const reply = getBotReply(message);
+      setTimeout(() => displayMessage(reply.text, "bot", reply.quick), 300);
+    }
+
+    function displayMessage(text, sender, quickReplies = []) {
+      const chatBox = document.getElementById("chat-box");
+      const msg = document.createElement("div");
+      msg.classList.add("message", sender);
+      msg.innerText = text;
+      chatBox.appendChild(msg);
+
+      // Add quick reply buttons for bot
+      if (sender === "bot" && quickReplies.length > 0) {
+        const quickDiv = document.createElement("div");
+        quickDiv.classList.add("quick-replies");
+        quickReplies.forEach(q => {
+          const btn = document.createElement("button");
+          btn.innerText = q;
+          btn.onclick = () => sendMessage(q);
+          quickDiv.appendChild(btn);
+        });
+        chatBox.appendChild(quickDiv);
+      }
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function getBotReply(message) {
+      const msg = message.toLowerCase();
+
+      for (const key in responses) {
+        if (msg.includes(key)) {
+          const options = responses[key].replies;
+          const quick = responses[key].quick || [];
+          return { text: options[Math.floor(Math.random() * options.length)], quick };
+        }
+      }
+
+      return { text: "Sorry, I don't understand that 😅", quick: ["Hello", "Hi", "Bye"] };
+    }
+
+    // Allow Enter key to send
+    document.getElementById("user-input").addEventListener("keypress", function(e) {
+      if (e.key === "Enter") sendMessage();
+    });
+  </script>
+</body>
+</html>
